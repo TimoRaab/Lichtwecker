@@ -1,9 +1,14 @@
+//v01
+//Autor: Timo Raab
+//
+
 #include <Arduino.h>
+#include <menu.h>
 
 void setup() {
-  // put your setup code here, to run once:
+  menuSetup();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  LCDML.loop();
 }

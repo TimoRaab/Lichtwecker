@@ -2,7 +2,6 @@
 #include <TFT_eSPI.h>
 #include <LCDMenuLib2.h>  
 
-//Just Testing Somehting
 
 extern LCDMenuLib2 LCDML;
 
@@ -16,5 +15,3 @@ void lcdml_menu_display();
 void lcdml_menu_clear();
 void lcdml_menu_control();
 
-
-// I just wanted to test something

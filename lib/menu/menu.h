@@ -6,6 +6,8 @@ extern LCDMenuLib2 LCDML;
 
 const byte okButtonPin = 33;
 const byte abortButtonPin = 34;
+const byte upButtonPin = 35;
+const byte downButtonPin = 36;
 
 void menuSetup();
 void lcdml_menu_display();

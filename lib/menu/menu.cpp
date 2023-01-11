@@ -1,6 +1,6 @@
-#include <Arduino.h>
-#include <TFT_eSPI.h>
-#include <LCDMenuLib2.h>  
+//#include <Arduino.h>
+//#include <TFT_eSPI.h>
+//#include <LCDMenuLib2.h>  
 #include "menu.h"
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
@@ -22,7 +22,14 @@ static uint8_t conv2d(const char* p) {
 uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // Get H, M, S from compile time
 
 
+//Button bRight = Button(buttonRight);
+//Button bLeft = Button(buttonLeft);
+Button bUp = Button(15);
+Button bDown = Button(4);
+Button bOK = Button(12);
+Button bAbort = Button(14);
 
+extern bool playAudio;
 
 #define _LCDML_ADAFRUIT_TEXT_COLOR       0xFFFF
   #define _LCDML_ADAFRUIT_BACKGROUND_COLOR 0x0000 
@@ -93,16 +100,40 @@ uint8_t hh=conv2d(__TIME__), mm=conv2d(__TIME__+3), ss=conv2d(__TIME__+6);  // G
   LCDML_add         (11 , LCDML_0_3       , 4  , "P1 SettingsA"      , NULL);                    // NULL = no menu function
   LCDML_add         (12 , LCDML_0_3       , 5  , "WarmA"             , NULL);                    // NULL = no menu function
   LCDML_add         (13 , LCDML_0_3       , 6  , "ColdA"             , NULL);                    // NULL = no menu function
+  LCDML_add         (14 , LCDML_0         , 5  , "StartAudio"        , startAudio);
 
   // ***TIP*** Try to update _LCDML_DISP_cnt when you add a menu element.
 
   // menu element count - last element id
   // this value must be the same as the last menu element
-  #define _LCDML_DISP_cnt    13
+  #define _LCDML_DISP_cnt    14
 
   // create menu
   LCDML_createMenu(_LCDML_DISP_cnt);
 
+extern Audio audio;
+
+void startAudio(byte param) {
+  if (LCDML.FUNC_setup()) {
+    Serial.println("Start Audio");
+    tft.fillScreen(_LCDML_ADAFRUIT_BACKGROUND_COLOR);
+    audio.
+    audio.connecttoFS(SD,"/MYMUSIC.mp3");
+    playAudio = true;
+  }
+
+  if(LCDML.FUNC_loop()) {
+    playAudio = true;
+    if (LCDML.BT_checkAny()) {
+      LCDML.FUNC_goBackToMenu();
+    }
+  }
+
+  if (LCDML.FUNC_close()) {
+    playAudio = false;
+    LCDML.MENU_getCurrentObj();
+  }
+}
 
 void menuSetup() {
         /* INIT DISPLAY */
@@ -118,7 +149,7 @@ void menuSetup() {
     // set text size / Textgroesse setzen
     tft.setTextSize(_LCDML_ADAFRUIT_FONT_SIZE);
     tft.setCursor(0, _LCDML_ADAFRUIT_FONT_H * (3));
-    tft.println(_LCDML_VERSION);
+    //tft.println(_LCDML_VERSION);
 
     /* INIT LCDML */
     // LCDMenuLib Setup
@@ -144,22 +175,36 @@ void menuSetup() {
   # define _LCDML_CONTROL_serial_right           'd'
   # define _LCDML_CONTROL_serial_quit            'q'
 
+byte checkButtons() {
+  if (bOK.isPressed(false)) return 0;
+  if (bAbort.isPressed(false)) return 1;
+  if (bUp.isPressed(false))  return 11;
+  if (bDown.isPressed(false)) return 12;
+  //if (bLeft.isPressed(false)) return 13;
+  //if (bRight.isPressed(false)) return 14;
+  return 255;
+}
+
 void lcdml_menu_control(void)
 {
   // If something must init, put in in the setup condition
   if(LCDML.BT_setup()) {
-    // runs only once 
   }
-
   if(LCDML.CE_setup()) {
-    // runs only once
   }
-
-  // check if new serial input is available
+  
+  uint8_t buttonValue = checkButtons();
+  switch(buttonValue) {
+    case 0:  LCDML.BT_enter(); break;
+    case 1:  LCDML.BT_quit(); break;
+    case 11: LCDML.BT_up(); break;
+    case 12: LCDML.BT_down(); break;
+    case 13: LCDML.BT_left(); break;
+    case 14: LCDML.BT_right(); break;
+    default: break;
+  }
   if (Serial.available()) {
-    // read one char from input buffer    
-    switch (Serial.read())
-    {
+    switch (Serial.read()) {
       case _LCDML_CONTROL_serial_enter:  LCDML.BT_enter(); break;
       case _LCDML_CONTROL_serial_up:     LCDML.BT_up();    break;
       case _LCDML_CONTROL_serial_down:   LCDML.BT_down();  break;
@@ -255,4 +300,8 @@ void lcdml_menu_display()
 void lcdml_menu_clear()
 /* ******************************************************************** */
 {
+}
+
+void menuStart() {
+  LCDML.loop();
 }

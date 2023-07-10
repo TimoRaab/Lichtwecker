@@ -1,13 +1,9 @@
-//#include <Arduino.h>
-//#include <TFT_eSPI.h>
-//#include <LCDMenuLib2.h>  
+
 #include "menuLightAlarm.h"
 
-#include <SPI.h>
 #include <Audio.h>
-#include <SD.h>
-#include <FS.h>
-#include <FastLED.h>
+#include <SPI.h>
+//#include <FastLED.h>
 
 
 #include "FreeSans36pt7b.h"
@@ -20,14 +16,6 @@
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
 
-/*
-//Button bRight = Button(buttonRight);
-//Button bLeft = Button(buttonLeft);
-Button bUp = Button(35, true, false, 50, NULL, true);
-Button bDown = Button(34, true, false, 50, NULL, true);
-Button bOK = Button(39, true, false, 50, NULL, true);
-Button bAbort = Button(36, true, false, 50, NULL, true);
-*/
 
 ButtonDebounce bUp = ButtonDebounce(34, true);
 ButtonDebounce bDown = ButtonDebounce(35, true);
@@ -42,7 +30,7 @@ String tempTimeString = "";
 
 Audio audio;
 
-
+/*
 #define LED_PIN_8     32
 #define NUM_LEDS_8    10 
 #define LED_TYPE    WS2812
@@ -52,18 +40,7 @@ uint8_t brightness = 90;
 #define UPDATES_PER_SECOND 2
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
-
-// microSD Card Reader connections
-//define SD_CS         5
-//#define SPI_MOSI      19 
-//#define SPI_MISO      23
-//#define SPI_SCK       18
- 
-#define SD_CS         15
-#define SPI_MOSI      12 
-#define SPI_MISO      13
-#define SPI_SCK       14
-
+*/
 
 // I2S Connections
 #define I2S_DOUT      25
@@ -156,26 +133,6 @@ boolean COND_hide()  // hide a menu element
 SPIClass * hspi = NULL;
 
 void setup_menu() {
-
-
-    
-    // Initialize SPI bus for microSD Card
-    //SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
-    pinMode(SD_CS, OUTPUT);
-    digitalWrite(SD_CS, HIGH);
-
-
-    hspi = new SPIClass(HSPI);
-    hspi->begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
-    //sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-    // Start microSD Card
-    Serial.println("Here");
-    if(!SD.begin(SD_CS, *hspi))
-    {
-      Serial.println("Error accessing microSD card!");
-      while(true); 
-    }
-    Serial.println("TADA");
     
     // Setup I2S 
     audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);

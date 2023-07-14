@@ -3,8 +3,11 @@
 
 #include <Audio.h>
 #include <SPI.h>
+#include "musicPlayer.h"
+#include <TaskScheduler.h>
 //#include <FastLED.h>
 
+extern Audio myMusicPlayer;
 
 #include "FreeSans36pt7b.h"
 #define FSS9 &FreeSans9pt7b
@@ -22,13 +25,15 @@ ButtonDebounce bDown = ButtonDebounce(35, true);
 ButtonDebounce bOK = ButtonDebounce(39, true);
 ButtonDebounce bAbort = ButtonDebounce(36, true);
 
+Task updateButton(10, TASK_FOREVER, &updateButtonHistory);
+Scheduler buttonRunner;
+
 byte backlightPin = 4;
 long screenSaverMillis = 0;
 boolean darkScreen = false;
 String tempDateString = "";
 String tempTimeString = "";
 
-Audio audio;
 
 /*
 #define LED_PIN_8     32
@@ -41,11 +46,6 @@ uint8_t brightness = 90;
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
 */
-
-// I2S Connections
-#define I2S_DOUT      25
-#define I2S_BCLK      26
-#define I2S_LRC       27
 
 #define _LCDML_ADAFRUIT_TEXT_COLOR       0xFFFF
   #define _LCDML_ADAFRUIT_BACKGROUND_COLOR 0x0000 
@@ -130,18 +130,9 @@ boolean COND_hide()  // hide a menu element
   // create menu
   LCDML_createMenu(_LCDML_DISP_cnt);
 
-SPIClass * hspi = NULL;
 
 void setup_menu() {
     
-    // Setup I2S 
-    audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
-    
-    // Set Volume
-    audio.setVolume(12);
-    
-    // Open music file
-    audio.connecttoFS(SD,"/MYMUSIC.mp3");
 
 
     tft.init();
@@ -158,12 +149,22 @@ void setup_menu() {
     LCDML.MENU_enRollover();
     LCDML.SCREEN_enable(mFunc_screensaver, 10000); // set to 10 seconds
 
-    FastLED.addLeds<LED_TYPE, LED_PIN_8, COLOR_ORDER>(leds_8, NUM_LEDS_8).setCorrection( TypicalLEDStrip );
-    FastLED.setBrightness(brightness);
+    buttonRunner.init();
+    buttonRunner.addTask(updateButton);
+    updateButton.enable();
+    buttonRunner.startNow();
 
-    
-    currentPalette = RainbowColors_p;
-    currentBlending = LINEARBLEND;
+    //FastLED.addLeds<LED_TYPE, LED_PIN_8, COLOR_ORDER>(leds_8, NUM_LEDS_8).setCorrection( TypicalLEDStrip );
+    //FastLED.setBrightness(brightness);
+    //currentPalette = RainbowColors_p;
+    //currentBlending = LINEARBLEND;
+}
+
+void updateButtonHistory() {
+  bOK.updateButton();
+  bAbort.updateButton();
+  bUp.updateButton();
+  bDown.updateButton();
 }
 
 
@@ -189,7 +190,7 @@ void lcdml_menu_control(void)
   }
   if(LCDML.CE_setup()) {
   }
-  
+  buttonRunner.execute();
   uint8_t buttonValue = checkButtons();
   switch(buttonValue) {
     case 0:  LCDML.BT_enter(); break;
@@ -299,17 +300,14 @@ void lcdml_menu_clear()
 }
 
 void menuStart() {
-  bUp.updateButton();
-  bDown.updateButton();
-  bOK.updateButton();
-  bAbort.updateButton();
+  buttonRunner.execute();
   LCDML.loop();
-  static uint8_t startIndex = 0;
-startIndex = startIndex + 1; /* motion speed */
 
-  FillLEDsFromPaletteColors( startIndex);
-    
-    FastLED.show();
+  
+  //static uint8_t startIndex = 0;
+  //startIndex = startIndex + 1; /* motion speed */
+  //FillLEDsFromPaletteColors(startIndex);
+  //FastLED.show();
 }
 
 
@@ -394,36 +392,59 @@ void playMusic(uint8_t param) {
         tft.setFreeFont(FSS36);
         tft.println("PLAY");
         tft.setTextSize(1);
-        audio.connecttoFS(SD,"/MYMUSIC.mp3");
+        myMusicPlayer.connecttoFS(SD,"/wakeuptune/MYMUSIC.mp3");
+        myMusicPlayer.setAudioPlayPosition(0);
+
 
     //LCDML.FUNC_setLoopInterval(100);  
   }
 
   if(LCDML.FUNC_loop()) {
-    do {
-      audio.loop();
-        bUp.updateButton();
-        bDown.updateButton();
-        bOK.updateButton();
-        bAbort.updateButton();
+    int tempCounter = 0;
+    while (true) {
+      myMusicPlayer.loop();
+      lcdml_menu_control();
         //LCDML.SCREEN_resetTimer();
-    } while (checkButtons() == 255);
-      LCDML.FUNC_goBackToMenu();
-      audio.pauseResume();
-      //audio.stopSong();
+      if (LCDML.BT_checkUp()) {
+        changeVolume(1);
+        LCDML.BT_resetAll();
+      }
+      if (LCDML.BT_checkDown()) {
+        changeVolume(-1);
+        LCDML.BT_resetAll();
+      }
+      if (LCDML.BT_checkEnter() || LCDML.BT_checkQuit()) {
+        myMusicPlayer.stopSong();
+        LCDML.FUNC_goBackToMenu();
+        break;
+      }
+      //if (tempCounter)
+      /*if (myMusicPlayer.getAudioCurrentTime() == myMusicPlayer.getAudioFileDuration()) {
+        Serial.println(myMusicPlayer.getAudioFileDuration());
+        Serial.println(myMusicPlayer.getAudioCurrentTime());
+        Serial.println("B");
+        myMusicPlayer.stopSong();
+        LCDML.FUNC_goBackToMenu();
+        break;
+      }*/
+    }
   }
 
   if(LCDML.FUNC_close())          // ****** STABLE END *********
   {
     // The screensaver go to the root menu
-    Serial.println("Close");
     LCDML.MENU_goRoot();
   }
 }
 
+/*
 void FillLEDsFromPaletteColors( uint8_t colorIndex) {
     for (int i=0; i < NUM_LEDS_8; i++) {
         leds_8[i] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
         colorIndex +=10;
     }
 }
+*/
+
+
+//EOF

@@ -6,12 +6,10 @@
 #include <LCDMenuLib2.h>  
 #include <ButtonDebounce.h>
 //#include <Button.h>
-#include <Audio.h>
 #include "timeInformation.h"
 
 
 extern LCDMenuLib2 LCDML;
-//extern Audio audio;
 
 const byte okButtonPin = 23;
 const byte abortButtonPin = 21;
@@ -28,6 +26,8 @@ void lcdml_menu_control();
 void mFunc_screensaver(uint8_t param);
 void playMusic(uint8_t param);
 void FillLEDsFromPaletteColors(uint8_t colorIndex);
+
+void updateButtonHistory();
 
 #endif
 //EOF

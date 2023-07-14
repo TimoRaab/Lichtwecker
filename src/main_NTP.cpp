@@ -4,9 +4,10 @@
 // include display to show time
 
 #include <Arduino.h>
-//#include "timeInformation.h"
-//#include "menuLightAlarm.h"
+#include "timeInformation.h"
+#include "menuLightAlarm.h"
 #include "sdCard.h"
+#include "musicPlayer.h"
 #include <LinkedList.h>
 
 
@@ -14,8 +15,9 @@
 void setup() {
     Serial.begin(115200);
     setup_SDCard();
-    //setup_TimeInformation();
-    //setup_menu();
+    setup_musicPlayer();
+    setup_TimeInformation();
+    setup_menu();
     delay(500);
     Serial.println("Startup Finished");
 
@@ -24,14 +26,13 @@ void setup() {
     int tempCounter = 0;
     LinkedList<String> fName = findFilesInDirectory(root);
     while(fName.size() == 0 && tempCounter < 10) {
+        delay(100);
+        Serial.println("Error File Size!, Try: " + tempCounter);
         tempCounter++;
         fName = findFilesInDirectory(root);
     }
 
     Serial.println("GetData from LinkedList");
-    //Serial.println(fName.size());
-    Serial.println(fName.get(0));
-    Serial.println(fName.get(1));
     Serial.println("Finished");
     String SSID = "";
     String pw = "";
@@ -44,5 +45,5 @@ void setup() {
 
 
  void loop() {
-    //menuStart();
+    menuStart();
 }

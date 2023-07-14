@@ -8,9 +8,6 @@ void setup_SDCard() {
 
     hspi = new SPIClass(HSPI);
     hspi->begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
-    //sdSPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-    // Start microSD Card
-    Serial.println("Here");
     if(!SD.begin(SD_CS, *hspi))
     {
       Serial.println("Error accessing microSD card!");

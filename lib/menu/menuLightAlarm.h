@@ -5,7 +5,6 @@
 #include <TFT_eSPI.h>
 #include <LCDMenuLib2.h>  
 #include <ButtonDebounce.h>
-//#include <Button.h>
 #include "timeInformation.h"
 
 
@@ -15,6 +14,13 @@ const byte okButtonPin = 23;
 const byte abortButtonPin = 21;
 const byte upButtonPin = 2;
 const byte downButtonPin = 4;
+
+# define _LCDML_CONTROL_serial_enter           'e'
+# define _LCDML_CONTROL_serial_up              'w'
+# define _LCDML_CONTROL_serial_down            's'
+# define _LCDML_CONTROL_serial_left            'a'
+# define _LCDML_CONTROL_serial_right           'd'
+# define _LCDML_CONTROL_serial_quit            'q'
 
 void startAudio(byte param);
 void setup_menu();

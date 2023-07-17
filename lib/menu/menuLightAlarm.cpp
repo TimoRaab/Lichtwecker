@@ -4,10 +4,9 @@
 #include <Audio.h>
 #include <SPI.h>
 #include "musicPlayer.h"
+#include "ledLight.h"
 #include <TaskScheduler.h>
-//#include <FastLED.h>
 
-extern Audio myMusicPlayer;
 
 #include "FreeSans36pt7b.h"
 #define FSS9 &FreeSans9pt7b
@@ -34,18 +33,8 @@ boolean darkScreen = false;
 String tempDateString = "";
 String tempTimeString = "";
 
+unsigned long timeMeasure = 0;
 
-/*
-#define LED_PIN_8     32
-#define NUM_LEDS_8    10 
-#define LED_TYPE    WS2812
-#define COLOR_ORDER GRB
-CRGB leds_8[NUM_LEDS_8];
-uint8_t brightness = 90;
-#define UPDATES_PER_SECOND 2
-CRGBPalette16 currentPalette;
-TBlendType    currentBlending;
-*/
 
 #define _LCDML_ADAFRUIT_TEXT_COLOR       0xFFFF
   #define _LCDML_ADAFRUIT_BACKGROUND_COLOR 0x0000 
@@ -107,7 +96,7 @@ boolean COND_hide()  // hide a menu element
 
   // For beginners
   // LCDML_add(id, prev_layer, new_num, lang_char_array, callback_function)
-  LCDML_add         (0  , LCDML_0         , 1  , "Set Time"      , NULL);       
+  LCDML_add         (0  , LCDML_0         , 1  , "Set Alarm"      , NULL);       
   LCDML_add         (1  , LCDML_0         , 2  , "Set Sleepcasts"   , NULL);
   LCDML_add         (2  , LCDML_0         , 3  , "Set Alarm"        , NULL);        
   LCDML_add         (3  , LCDML_0         , 4  , "Set Wakeup Tune"  , NULL);
@@ -154,10 +143,6 @@ void setup_menu() {
     updateButton.enable();
     buttonRunner.startNow();
 
-    //FastLED.addLeds<LED_TYPE, LED_PIN_8, COLOR_ORDER>(leds_8, NUM_LEDS_8).setCorrection( TypicalLEDStrip );
-    //FastLED.setBrightness(brightness);
-    //currentPalette = RainbowColors_p;
-    //currentBlending = LINEARBLEND;
 }
 
 void updateButtonHistory() {
@@ -168,12 +153,7 @@ void updateButtonHistory() {
 }
 
 
-  # define _LCDML_CONTROL_serial_enter           'e'
-  # define _LCDML_CONTROL_serial_up              'w'
-  # define _LCDML_CONTROL_serial_down            's'
-  # define _LCDML_CONTROL_serial_left            'a'
-  # define _LCDML_CONTROL_serial_right           'd'
-  # define _LCDML_CONTROL_serial_quit            'q'
+
 
 byte checkButtons() {
   if (bOK.isPressed(false)) return 0;
@@ -300,14 +280,7 @@ void lcdml_menu_clear()
 }
 
 void menuStart() {
-  buttonRunner.execute();
   LCDML.loop();
-
-  
-  //static uint8_t startIndex = 0;
-  //startIndex = startIndex + 1; /* motion speed */
-  //FillLEDsFromPaletteColors(startIndex);
-  //FastLED.show();
 }
 
 
@@ -392,17 +365,17 @@ void playMusic(uint8_t param) {
         tft.setFreeFont(FSS36);
         tft.println("PLAY");
         tft.setTextSize(1);
-        myMusicPlayer.connecttoFS(SD,"/wakeuptune/MYMUSIC.mp3");
-        myMusicPlayer.setAudioPlayPosition(0);
+        setCurrentMusic("/WAKEUPTUNE/MyMusic.mp3");
+        changeBrightness(90);
 
-
+        timeMeasure = millis();
     //LCDML.FUNC_setLoopInterval(100);  
   }
 
   if(LCDML.FUNC_loop()) {
-    int tempCounter = 0;
     while (true) {
-      myMusicPlayer.loop();
+      playMusic();
+      updateLED();
       lcdml_menu_control();
         //LCDML.SCREEN_resetTimer();
       if (LCDML.BT_checkUp()) {
@@ -414,19 +387,17 @@ void playMusic(uint8_t param) {
         LCDML.BT_resetAll();
       }
       if (LCDML.BT_checkEnter() || LCDML.BT_checkQuit()) {
-        myMusicPlayer.stopSong();
+        stopMusic();
         LCDML.FUNC_goBackToMenu();
         break;
       }
-      //if (tempCounter)
-      /*if (myMusicPlayer.getAudioCurrentTime() == myMusicPlayer.getAudioFileDuration()) {
-        Serial.println(myMusicPlayer.getAudioFileDuration());
-        Serial.println(myMusicPlayer.getAudioCurrentTime());
-        Serial.println("B");
-        myMusicPlayer.stopSong();
-        LCDML.FUNC_goBackToMenu();
-        break;
-      }*/
+      if (isSongFinished()) {
+        if (isSongFinished() == 1) {
+          stopMusic();
+          LCDML.FUNC_goBackToMenu();
+          break;
+        } 
+      }
     }
   }
 
@@ -437,14 +408,7 @@ void playMusic(uint8_t param) {
   }
 }
 
-/*
-void FillLEDsFromPaletteColors( uint8_t colorIndex) {
-    for (int i=0; i < NUM_LEDS_8; i++) {
-        leds_8[i] = ColorFromPalette( currentPalette, colorIndex, brightness, currentBlending);
-        colorIndex +=10;
-    }
-}
-*/
+
 
 
 //EOF

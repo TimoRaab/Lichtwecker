@@ -1,15 +1,23 @@
-#include "sdCard.h"
+#include <SPI.h>
+#include <SD.h>
+#include <FS.h>
+#include <Arduino.h>
+#include <LinkedList.h>
+
+#define SD_CS         15
+#define SPI_MOSI      12 
+#define SPI_MISO      13
+#define SPI_SCK       14
 
 SPIClass hspi = SPIClass(HSPI);
 
 void setup_SDCard() {
-  SD.end();
-    //pinMode(SD_CS, OUTPUT);
-    //digitalWrite(SD_CS, HIGH);
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);
 
     //hspi = SPIClass(HSPI);
     hspi.begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
-    if(!SD.begin(SD_CS, hspi, 4000000U))
+    if(!SD.begin(SD_CS, hspi))
     {
       Serial.println("Error accessing microSD card!");
       while(true); 
@@ -121,4 +129,45 @@ void writeFile(fs::FS &fs, const char * path, const char * message){
   file.close();
 }
 
-//EOF
+void setup(){
+    Serial.begin(115200);
+    setup_SDCard();
+    Serial.println("Startup finished");
+    delay(1000);
+    Serial.println("delay finished");
+    //writeFile(SD, "/hello.txt", "Hello ");
+
+    //listDir(SD, "/", 2);
+    Serial.println("First Print");
+    Serial.println("\n\n\n");
+    File root2 = SD.open("/");
+    printDirectory(root2, 2);
+    root2.close();
+    Serial.println("Second Print");
+    Serial.println("\n\n\n");
+    File root = SD.open("/WLAN", "r");
+    printDirectory(root, 0);
+    root.close();
+    root = SD.open("/WLAN", "r");
+    int tempCounter = 0;
+    LinkedList<String> fName = findFilesInDirectory(root);
+    while(fName.size() == 0 && tempCounter < 5) {
+        delay(100);
+        Serial.println("Error File Size!, Try: " + tempCounter);
+        tempCounter++;
+        fName = findFilesInDirectory(root);
+    }
+
+    Serial.println("GetData from LinkedList");
+    Serial.println("Finished");
+    String SSID = "";
+    String pw = "";
+    getWLANInformation("/WLAN/" + fName.get(0), SSID, pw);
+
+    Serial.println("Outside");
+    Serial.println(SSID);
+    Serial.println(pw);
+}
+
+
+void loop(){}

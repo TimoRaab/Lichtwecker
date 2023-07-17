@@ -18,6 +18,8 @@ void setup_SDCard();
 void printDirectory(File dir, int numTabs);
 LinkedList<String> findFilesInDirectory(File dir);
 bool getWLANInformation(String filename, String &SSID, String &pw);
+void listDir(fs::FS &fs, const char * dirname, uint8_t levels);
+void writeFile(fs::FS &fs, const char * path, const char * message);
 
 #endif
 //EOF

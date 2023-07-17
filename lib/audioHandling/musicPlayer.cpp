@@ -17,7 +17,7 @@ void setup_musicPlayer() {
     myMusicPlayer.setVolume(currentVolume);
     
     // Open music file
-    myMusicPlayer.connecttoFS(SD,"/WakeupTune/MYMUSIC.mp3");
+    //myMusicPlayer.connecttoFS(SD,"/WakeupTune/MYMUSIC.mp3");
 }
 
 bool changeVolume(int8_t step) {
@@ -32,4 +32,26 @@ bool setVolume(uint8_t volume) {
     currentVolume = volume;
     myMusicPlayer.setVolume(currentVolume);
     return true;
+}
+
+bool setCurrentMusic(const char* fname) {
+    myMusicPlayer.connecttoFS(SD, fname);
+    myMusicPlayer.setAudioPlayPosition(0);
+    return true;
+}
+
+void playMusic() {
+    myMusicPlayer.loop();
+}
+
+void stopMusic() {
+    myMusicPlayer.stopSong();
+}
+
+byte isSongFinished() {
+    uint32_t fDuration = myMusicPlayer.getAudioFileDuration();
+    if (!fDuration) return 11;
+    uint32_t fCurrent = myMusicPlayer.getAudioCurrentTime();
+    if (fCurrent == fDuration) return 1;
+    return 0;
 }

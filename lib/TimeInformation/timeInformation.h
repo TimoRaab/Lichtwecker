@@ -13,6 +13,10 @@ byte setTimeInformation();
 String getDate();
 String getTime();
 
+String getSpecificString(String strFormat);
+
+void setTime(tm &timeInfo);
+tm getCurrentTimeStruct();
 
 
 

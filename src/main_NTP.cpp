@@ -4,10 +4,10 @@
 // include display to show time
 
 #include <Arduino.h>
-//#include "timeInformation.h"
-//#include "menuLightAlarm.h"
-//#include "sdCard.h"
-//#include "musicPlayer.h"
+#include "timeInformation.h"
+#include "menuLightAlarm.h"
+#include "sdCard.h"
+#include "musicPlayer.h"
 #include "ledLight.h"
 #include <LinkedList.h>
 
@@ -15,10 +15,10 @@
 
 void setup() {
     Serial.begin(115200);
-    //setup_SDCard();
-    //setup_musicPlayer();
-    //setup_TimeInformation();
-    //setup_menu();
+    setup_SDCard();
+    setup_musicPlayer();
+    setup_TimeInformation();
+    setup_menu();
     setup_LED();
     delay(500);
     Serial.println("Startup Finished");
@@ -59,6 +59,6 @@ void setup() {
 }
 
  void loop() {
-    //menuStart();
-    updateLED();
+    menuStart();
+    //updateLED();
 }

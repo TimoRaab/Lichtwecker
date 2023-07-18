@@ -3,10 +3,11 @@
 
 #include <Audio.h>
 #include <SPI.h>
-#include "musicPlayer.h"
-#include "ledLight.h"
 #include <TaskScheduler.h>
 
+#include "musicPlayer.h"
+#include "ledLight.h"
+#include "timeInformation.h"
 
 #include "FreeSans36pt7b.h"
 #define FSS9 &FreeSans9pt7b
@@ -34,6 +35,9 @@ String tempDateString = "";
 String tempTimeString = "";
 
 unsigned long timeMeasure = 0;
+byte menu_tempTimeConstant = 0;
+struct tm menu_tempTimeStruct;
+boolean timeChangeFlag = false;
 
 
 #define _LCDML_ADAFRUIT_TEXT_COLOR       0xFFFF
@@ -101,20 +105,31 @@ boolean COND_hide()  // hide a menu element
   LCDML_add         (2  , LCDML_0         , 3  , "Set Alarm"        , NULL);        
   LCDML_add         (3  , LCDML_0         , 4  , "Set Wakeup Tune"  , NULL);
   LCDML_add         (4  , LCDML_0         , 5  , "Set Wakeup Music" , NULL);   
-  LCDML_add         (5  , LCDML_0_1       , 1, "A", NULL);
-  LCDML_add         (6  , LCDML_0_1       , 2, "B", NULL);
-  LCDML_add         (7  , LCDML_0_1       , 3, "C", NULL);
-  LCDML_add         (8  , LCDML_0_1       , 4, "D", NULL);
-  LCDML_add         (9  , LCDML_0_2       , 1, "A", NULL);
-  LCDML_add         (10 , LCDML_0_2       , 2, "Play Music", playMusic);
+  LCDML_add         (5  , LCDML_0         , 6  , "Time Settings"    , NULL);
+    LCDML_add         (6  , LCDML_0_6       , 1  , "NTP Settings"     , NULL);
+      LCDML_add         (7  , LCDML_0_6_1     , 1  , "Activate NPT"     , NULL); //todo
+      LCDML_add         (8  , LCDML_0_6_1     , 2  , "NTP Intervall"    , NULL); //TODO
+    LCDML_add         (9  , LCDML_0_6       , 2  , "Set Time NTP now" , NULL); //TODO
+    LCDML_add         (10 , LCDML_0_6       , 3  , "Set Time Manual"  , NULL);        
+      LCDML_addAdvanced (11 , LCDML_0_6_3     , 1  , NULL, "", menu_setHour, 0, _LCDML_TYPE_dynParam);
+      LCDML_addAdvanced (12 , LCDML_0_6_3     , 2  , NULL, "", menu_setMinute, 0, _LCDML_TYPE_dynParam);
+      LCDML_addAdvanced (13 , LCDML_0_6_3     , 3  , NULL, "", menu_setMonth, 0, _LCDML_TYPE_dynParam);
+      LCDML_addAdvanced (14 , LCDML_0_6_3     , 4  , NULL, "", menu_setDay, 0, _LCDML_TYPE_dynParam);
+      //todo year and second
+  LCDML_add         (15  , LCDML_0_1       , 1, "A", NULL);
+  LCDML_add         (16  , LCDML_0_1       , 2, "B", NULL);
+  LCDML_add         (17  , LCDML_0_1       , 3, "C", NULL);
+  LCDML_add         (18 , LCDML_0_1       , 4, "D", NULL);
+  LCDML_add         (19 , LCDML_0_2       , 1, "A", NULL);
+  LCDML_add         (20 , LCDML_0_2       , 2, "Play Music", playMusic);
 
-  LCDML_addAdvanced (11 , LCDML_0         , 6  , COND_hide,  "screensaver"        , mFunc_screensaver,        0,   _LCDML_TYPE_default);  
+  LCDML_addAdvanced (21 , LCDML_0         , 200  , COND_hide,  "screensaver"        , mFunc_screensaver,        0,   _LCDML_TYPE_default);  
 
   // ***TIP*** Try to update _LCDML_DISP_cnt when you add a menu element.
 
   // menu element count - last element id
   // this value must be the same as the last menu element
-  #define _LCDML_DISP_cnt    11
+  #define _LCDML_DISP_cnt    21
 
   // create menu
   LCDML_createMenu(_LCDML_DISP_cnt);
@@ -206,7 +221,7 @@ void lcdml_menu_display()
   tft.setTextColor(_LCDML_ADAFRUIT_TEXT_COLOR);  
   // set text size / Textgroesse setzen
   tft.setTextSize(_LCDML_ADAFRUIT_FONT_SIZE);
-  tft.setTextFont(1);
+  tft.setTextFont(2);
   
   // declaration of some variables
   // ***************
@@ -409,6 +424,224 @@ void playMusic(uint8_t param) {
 }
 
 
+void menu_setHour(uint8_t line) {
+  // check if this function is active (cursor stands on this line)
+  if (line == LCDML.MENU_getCursorPos()) {
+    // make only an action when the cursor stands on this menu item
+    //check Button
+    if(LCDML.BT_checkAny()) {
+      if(LCDML.BT_checkEnter()) {
+        // this function checks returns the scroll disable status (0 = menu scrolling enabled, 1 = menu scrolling disabled)
+        if(LCDML.MENU_getScrollDisableStatus() == 0) {
+          // disable the menu scroll function to catch the cursor on this point
+          // now it is possible to work with BT_checkUp and BT_checkDown in this function
+          // this function can only be called in a menu, not in a menu function
+          LCDML.MENU_disScroll();
+          menu_tempTimeConstant = getSpecificString("%H").toInt();
+          timeChangeFlag = true;
+        }
+        else {
+          // enable the normal menu scroll function
+          LCDML.MENU_enScroll();
+          menu_tempTimeStruct = getCurrentTimeStruct();
+          menu_tempTimeStruct.tm_hour = menu_tempTimeConstant;
+          setTime(menu_tempTimeStruct);
+          timeChangeFlag = false;
+        }
+
+        // do something
+        // ...
+      }
+      if (LCDML.BT_checkQuit()) {
+        LCDML.MENU_enScroll();
+        timeChangeFlag = false;
+      }
+
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkUp())
+      {
+        menu_tempTimeConstant++;
+      }
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkDown())
+      {
+        menu_tempTimeConstant--;
+      }
+    }
+  }
+
+
+  tft.setCursor(10, _LCDML_ADAFRUIT_FONT_H * (line));
+  timeChangeFlag ? 
+    tft.println("Hour: " + (String)menu_tempTimeConstant) :
+    tft.println("Hour: " + getSpecificString("%H"));
+}
+
+void menu_setMinute(uint8_t line){  // check if this function is active (cursor stands on this line)
+  if (line == LCDML.MENU_getCursorPos()) {
+    // make only an action when the cursor stands on this menu item
+    //check Button
+    if(LCDML.BT_checkAny()) {
+      if(LCDML.BT_checkEnter()) {
+        // this function checks returns the scroll disable status (0 = menu scrolling enabled, 1 = menu scrolling disabled)
+        if(LCDML.MENU_getScrollDisableStatus() == 0) {
+          // disable the menu scroll function to catch the cursor on this point
+          // now it is possible to work with BT_checkUp and BT_checkDown in this function
+          // this function can only be called in a menu, not in a menu function
+          LCDML.MENU_disScroll();
+          menu_tempTimeConstant = getSpecificString("%M").toInt();
+          timeChangeFlag = true;
+        }
+        else {
+          // enable the normal menu scroll function
+          LCDML.MENU_enScroll();
+          menu_tempTimeStruct = getCurrentTimeStruct();
+          menu_tempTimeStruct.tm_min = menu_tempTimeConstant;
+          setTime(menu_tempTimeStruct);
+          timeChangeFlag = false;
+        }
+
+        // do something
+        // ...
+      }
+      if (LCDML.BT_checkQuit()) {
+        LCDML.MENU_enScroll();
+        timeChangeFlag = false;
+      }
+
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkUp())
+      {
+        menu_tempTimeConstant++;
+      }
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkDown())
+      {
+        menu_tempTimeConstant--;
+      }
+    }
+  }
+
+
+  tft.setCursor(10, _LCDML_ADAFRUIT_FONT_H * (line));
+  timeChangeFlag ? 
+    tft.println("Minute: " + (String)menu_tempTimeConstant) :
+    tft.println("Minute: " + getSpecificString("%M"));
+}
+
+
+void menu_setMonth(uint8_t line){  // check if this function is active (cursor stands on this line)
+  if (line == LCDML.MENU_getCursorPos()) {
+    // make only an action when the cursor stands on this menu item
+    //check Button
+    if(LCDML.BT_checkAny()) {
+      if(LCDML.BT_checkEnter()) {
+        // this function checks returns the scroll disable status (0 = menu scrolling enabled, 1 = menu scrolling disabled)
+        if(LCDML.MENU_getScrollDisableStatus() == 0) {
+          // disable the menu scroll function to catch the cursor on this point
+          // now it is possible to work with BT_checkUp and BT_checkDown in this function
+          // this function can only be called in a menu, not in a menu function
+          LCDML.MENU_disScroll();
+          menu_tempTimeConstant = getSpecificString("%m").toInt();
+          timeChangeFlag = true;
+        }
+        else {
+          // enable the normal menu scroll function
+          LCDML.MENU_enScroll();
+          menu_tempTimeStruct = getCurrentTimeStruct();
+          menu_tempTimeStruct.tm_mon = menu_tempTimeConstant;
+          setTime(menu_tempTimeStruct);
+          timeChangeFlag = false;
+        }
+
+        // do something
+        // ...
+      }
+      if (LCDML.BT_checkQuit()) {
+        LCDML.MENU_enScroll();
+        timeChangeFlag = false;
+      }
+
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkUp())
+      {
+        menu_tempTimeConstant++;
+      }
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkDown())
+      {
+        menu_tempTimeConstant--;
+      }
+    }
+  }
+
+
+  tft.setCursor(10, _LCDML_ADAFRUIT_FONT_H * (line));
+  timeChangeFlag ? 
+    tft.println("Month: " + (String)menu_tempTimeConstant) :
+    tft.println("Month: " + getSpecificString("%b"));
+}
+
+
+void menu_setDay(uint8_t line){  // check if this function is active (cursor stands on this line)
+  if (line == LCDML.MENU_getCursorPos()) {
+    // make only an action when the cursor stands on this menu item
+    //check Button
+    if(LCDML.BT_checkAny()) {
+      if(LCDML.BT_checkEnter()) {
+        // this function checks returns the scroll disable status (0 = menu scrolling enabled, 1 = menu scrolling disabled)
+        if(LCDML.MENU_getScrollDisableStatus() == 0) {
+          // disable the menu scroll function to catch the cursor on this point
+          // now it is possible to work with BT_checkUp and BT_checkDown in this function
+          // this function can only be called in a menu, not in a menu function
+          LCDML.MENU_disScroll();
+          menu_tempTimeConstant = getSpecificString("%d").toInt();
+          timeChangeFlag = true;
+        }
+        else {
+          // enable the normal menu scroll function
+          LCDML.MENU_enScroll();
+          menu_tempTimeStruct = getCurrentTimeStruct();
+          menu_tempTimeStruct.tm_mday = menu_tempTimeConstant;
+          setTime(menu_tempTimeStruct);
+          timeChangeFlag = false;
+        }
+
+        // do something
+        // ...
+      }
+      if (LCDML.BT_checkQuit()) {
+        LCDML.MENU_enScroll();
+        timeChangeFlag = false;
+      }
+
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkUp())
+      {
+        menu_tempTimeConstant++;
+      }
+
+      // This check have only an effect when MENU_disScroll is set
+      if(LCDML.BT_checkDown())
+      {
+        menu_tempTimeConstant--;
+      }
+    }
+  }
+
+
+  tft.setCursor(10, _LCDML_ADAFRUIT_FONT_H * (line));
+  timeChangeFlag ? 
+    tft.println("Day: " + (String)menu_tempTimeConstant) :
+    tft.println("Day: " + getSpecificString("%d"));
+}
 
 
 //EOF

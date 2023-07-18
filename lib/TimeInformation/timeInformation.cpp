@@ -75,4 +75,30 @@ String getTime() {
     strftime(timeString, 6, "%H:%M", &timeinfo);
     return timeString;
 }
+
+String getSpecificString(String strFormat) {
+    struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+        return "NOT FOUND";
+    }
+    
+    char timeString[strFormat.length()+1];
+    strftime(timeString, strFormat.length()+1, strFormat.c_str(), &timeinfo);
+    return timeString;
+}
+
+
+void setTime(tm &timeInfo) {
+    time_t t = mktime(&timeInfo);
+    struct timeval now = { .tv_sec = t };
+    settimeofday(&now, NULL);
+}
+
+tm getCurrentTimeStruct() {
+   struct tm timeinfo;
+    if(!getLocalTime(&timeinfo)){
+        return timeinfo;
+    } 
+    return timeinfo;
+}
 //EOF

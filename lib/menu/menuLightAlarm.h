@@ -33,6 +33,11 @@ void mFunc_screensaver(uint8_t param);
 void playMusic(uint8_t param);
 void FillLEDsFromPaletteColors(uint8_t colorIndex);
 
+void menu_setHour(uint8_t line);
+void menu_setMinute(uint8_t line);
+void menu_setMonth(uint8_t line);
+void menu_setDay(uint8_t line);
+
 void updateButtonHistory();
 
 #endif

@@ -76,14 +76,14 @@ String getTime() {
     return timeString;
 }
 
-String getSpecificString(String strFormat) {
+String getSpecificString(String strFormat, byte strLength) {
     struct tm timeinfo;
     if(!getLocalTime(&timeinfo)){
         return "NOT FOUND";
     }
     
-    char timeString[strFormat.length()+1];
-    strftime(timeString, strFormat.length()+1, strFormat.c_str(), &timeinfo);
+    char timeString[strLength+1];
+    strftime(timeString, strLength+1, strFormat.c_str(), &timeinfo);
     return timeString;
 }
 

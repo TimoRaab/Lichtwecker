@@ -35,7 +35,14 @@ const uint16_t rangeLowerTimeSet[] = {
   0,
   1,
   1,
-  2022
+  2017
+};
+const byte strLength[] = {
+  2,
+  2,
+  2,
+  2,
+  4,
 };
 
 void menu_setTimeVal(uint8_t line, byte identifier) {
@@ -46,7 +53,7 @@ void menu_setTimeVal(uint8_t line, byte identifier) {
         if(LCDML.MENU_getScrollDisableStatus() == 0) {
           LCDML.MENU_disScroll();
           menu_tempTimeConstant = 
-            getSpecificString(timeIdentifierLookup[identifier]).toInt();
+            getSpecificString(timeIdentifierLookup[identifier], strLength[identifier]).toInt();
           timeChangeFlag = true;
         } else {
           LCDML.MENU_enScroll();
@@ -56,7 +63,7 @@ void menu_setTimeVal(uint8_t line, byte identifier) {
             case 1: menu_tempTimeStruct.tm_min = menu_tempTimeConstant; break;
             case 2: menu_tempTimeStruct.tm_mday = menu_tempTimeConstant; break;
             case 3: menu_tempTimeStruct.tm_mon = menu_tempTimeConstant; break;
-            case 4: menu_tempTimeStruct.tm_year = menu_tempTimeConstant; break;
+            case 4: menu_tempTimeStruct.tm_year = menu_tempTimeConstant-1900; break;
           }
           setTime(menu_tempTimeStruct);
           timeChangeFlag = false;
@@ -81,9 +88,11 @@ void menu_setTimeVal(uint8_t line, byte identifier) {
     }
   timeChangeFlag ? 
       tft.println(timeSetLookup[identifier] + (String)menu_tempTimeConstant) :
-      tft.println(timeSetLookup[identifier] + getSpecificString(timeIdentifierLookup[identifier]));
+      tft.println(timeSetLookup[identifier] +
+        getSpecificString(timeIdentifierLookup[identifier], strLength[identifier]));
   } else {
-    tft.println(timeSetLookup[identifier] + getSpecificString(timeIdentifierLookup[identifier]));
+    tft.println(timeSetLookup[identifier] + 
+      getSpecificString(timeIdentifierLookup[identifier], strLength[identifier]));
   }
 }
 
@@ -91,20 +100,42 @@ void menu_setHour(uint8_t line) {
     menu_setTimeVal(line, 0);
 }
 
-void menu_setMinute(uint8_t line){ 
+void menu_setMinute(uint8_t line) { 
     menu_setTimeVal(line, 1);
 }
 
-void menu_setDay(uint8_t line){ 
+void menu_setDay(uint8_t line) { 
     menu_setTimeVal(line, 2);
 }
 
-void menu_setMonth(uint8_t line){ 
+void menu_setMonth(uint8_t line) { 
     menu_setTimeVal(line, 3);
 }
 
-void menu_setYear(uint8_t line){ 
+void menu_setYear(uint8_t line) { 
     menu_setTimeVal(line, 4);
 }
+
+void menu_resetSeconds(uint8_t line) {
+  tft.setCursor(14, _LCDML_ADAFRUIT_FONT_H * (line));
+  tft.println("Reset Seconds");
+  if (line == LCDML.MENU_getCursorPos()) {
+    if(LCDML.BT_checkEnter()) {
+      menu_tempTimeStruct = getCurrentTimeStruct();
+      menu_tempTimeStruct.tm_sec = 0;
+    }
+  }
+}
+
+
+void menu_setTimeManual(uint8_t line) {
+  if (LCDML.FUNC_setup()) {
+    timeChangeFlag = false;
+    LCDML.OTHER_jumpToID(LCDML.FUNC_getID()+1);
+  }
+  if (LCDML.FUNC_loop()) {}
+  if (LCDML.FUNC_close()) {}
+}
+
 
 //EOF

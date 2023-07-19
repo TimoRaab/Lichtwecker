@@ -13,6 +13,8 @@ void menu_setMinute(uint8_t line);
 void menu_setMonth(uint8_t line);
 void menu_setDay(uint8_t line);
 void menu_setYear(uint8_t line);
+void menu_resetSeconds(uint8_t line);
+void menu_setTimeManual(uint8_t line);
 
 #endif
 //EOF

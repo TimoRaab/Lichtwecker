@@ -51,48 +51,45 @@ boolean COND_hide()  // hide a menu element
 { 
   return false;  // hidden
 } 
+LCDML_addAdvanced (0 , LCDML_0         , 200  , COND_hide,  "screensaver"        , mFunc_screensaver,        0,   _LCDML_TYPE_default);  
 
-  LCDML_add         (0  , LCDML_0         , 1  , "Set Alarm"      , NULL);       
-  LCDML_add         (1  , LCDML_0         , 2  , "Set Sleepcasts"   , NULL);
-  LCDML_add         (2  , LCDML_0         , 3  , "Set Alarm"        , NULL);        
-  LCDML_add         (3  , LCDML_0         , 4  , "Set Wakeup Tune"  , NULL);
-  LCDML_add         (4  , LCDML_0         , 5  , "Set Wakeup Music" , NULL);  
+LCDML_add         (1  , LCDML_0         , 1  , "Set Alarm"      , NULL);       
+LCDML_add         (2  , LCDML_0         , 2  , "Set Sleepcasts"   , NULL);
+LCDML_add         (3  , LCDML_0         , 3  , "Set Alarm"        , NULL);        
+LCDML_add         (4  , LCDML_0         , 4  , "Set Wakeup Tune"  , NULL);
+LCDML_add         (5  , LCDML_0         , 5  , "Set Wakeup Music" , NULL);  
 
-  LCDML_add         (5  , LCDML_0         , 6  , "Time Settings"    , NULL);
-    LCDML_add         (6  , LCDML_0_6       , 1  , "NTP Settings"     , NULL);
-      LCDML_add         (7  , LCDML_0_6_1     , 1  , "Activate NPT"     , NULL); //todo
-      LCDML_add         (8  , LCDML_0_6_1     , 2  , "NTP Intervall"    , NULL); //TODO
-    LCDML_add         (9  , LCDML_0_6       , 2  , "Set Time NTP now" , NULL); //TODO
-    LCDML_add         (10 , LCDML_0_6       , 3  , "Set Time Manual"  , NULL);        
-      LCDML_addAdvanced (11 , LCDML_0_6_3     , 1  , NULL, "", menu_setHour, 0, _LCDML_TYPE_dynParam);
-      LCDML_addAdvanced (12 , LCDML_0_6_3     , 2  , NULL, "", menu_setMinute, 0, _LCDML_TYPE_dynParam);
-      LCDML_addAdvanced (13 , LCDML_0_6_3     , 4  , NULL, "", menu_setMonth, 0, _LCDML_TYPE_dynParam);
-      LCDML_addAdvanced (14 , LCDML_0_6_3     , 3  , NULL, "", menu_setDay, 0, _LCDML_TYPE_dynParam);
-      LCDML_addAdvanced (22 , LCDML_0_6_3     , 5  , NULL, "", menu_setYear, 0, _LCDML_TYPE_dynParam);
+LCDML_add         (6  , LCDML_0         , 6  , "Time Settings"    , NULL);
+  LCDML_add         (7  , LCDML_0_6       , 1  , "NTP Settings"     , NULL);
+    LCDML_add         (8  , LCDML_0_6_1     , 1  , "Activate NPT"     , NULL); //todo
+    LCDML_add         (9  , LCDML_0_6_1     , 2  , "NTP Intervall"    , NULL); //TODO
+  LCDML_add         (10 , LCDML_0_6       , 2  , "Set Time NTP now" , NULL); //TODO
+  LCDML_add         (11 , LCDML_0_6       , 3  , "Set Time Manual"  , menu_setTimeManual);        
+    LCDML_addAdvanced (12 , LCDML_0_6_3     , 1  , NULL, "", menu_setHour, 0, _LCDML_TYPE_dynParam);
+    LCDML_addAdvanced (13 , LCDML_0_6_3     , 2  , NULL, "", menu_setMinute, 0, _LCDML_TYPE_dynParam);
+    LCDML_addAdvanced (14 , LCDML_0_6_3     , 4  , NULL, "", menu_setMonth, 0, _LCDML_TYPE_dynParam);
+    LCDML_addAdvanced (15 , LCDML_0_6_3     , 3  , NULL, "", menu_setDay, 0, _LCDML_TYPE_dynParam);
+    LCDML_addAdvanced (16 , LCDML_0_6_3     , 5  , NULL, "", menu_setYear, 0, _LCDML_TYPE_dynParam);
+    LCDML_addAdvanced (17 , LCDML_0_6_3     , 6  , NULL, "Reset Seconds", menu_resetSeconds, 0, _LCDML_TYPE_dynParam);
 
-  LCDML_add         (15  , LCDML_0_1       , 1, "A", NULL);
-  LCDML_add         (16  , LCDML_0_1       , 2, "B", NULL);
-  LCDML_add         (17  , LCDML_0_1       , 3, "C", NULL);
-  LCDML_add         (18 , LCDML_0_1       , 4, "D", NULL);
-  LCDML_add         (19 , LCDML_0_2       , 1, "A", NULL);
-  LCDML_add         (20 , LCDML_0_2       , 2, "Play Music", playMusic);
-
-  LCDML_addAdvanced (21 , LCDML_0         , 200  , COND_hide,  "screensaver"        , mFunc_screensaver,        0,   _LCDML_TYPE_default);  
+LCDML_add         (18  , LCDML_0_1       , 1, "A", NULL);
+LCDML_add         (19  , LCDML_0_1       , 2, "B", NULL);
+LCDML_add         (20  , LCDML_0_1       , 3, "C", NULL);
+LCDML_add         (21 , LCDML_0_1       , 4, "D", NULL);
+LCDML_add         (22 , LCDML_0_2       , 1, "A", NULL);
+LCDML_add         (23 , LCDML_0_2       , 2, "Play Music", playMusic);
 
   // ***TIP*** Try to update _LCDML_DISP_cnt when you add a menu element.
 
   // menu element count - last element id
   // this value must be the same as the last menu element
-  #define _LCDML_DISP_cnt    22
+  #define _LCDML_DISP_cnt    23
 
   // create menu
   LCDML_createMenu(_LCDML_DISP_cnt);
 
 
 void setup_menu() {
-    
-
-
     tft.init();
     tft.setRotation(1);
     tft.fillScreen(_LCDML_ADAFRUIT_BACKGROUND_COLOR);

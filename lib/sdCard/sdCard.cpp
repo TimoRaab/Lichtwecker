@@ -1,6 +1,7 @@
 #include "sdCard.h"
 
 SPIClass hspi = SPIClass(HSPI);
+boolean isAvailable = false;
 
 void setup_SDCard() {
   SD.end();
@@ -8,13 +9,32 @@ void setup_SDCard() {
     //digitalWrite(SD_CS, HIGH);
 
     //hspi = SPIClass(HSPI);
-    hspi.begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
-    if(!SD.begin(SD_CS, hspi, 4000000U))
-    {
-      Serial.println("Error accessing microSD card!");
-      while(true); 
-    }
-    //Serial.println("microSD-Card found.");
+    sdCard_open();
+}
+
+
+byte sdCard_open() {
+  if (isAvailable) return 2;
+  hspi.begin(SPI_SCK, SPI_MISO, SPI_MOSI, SD_CS);
+  if(!SD.begin(SD_CS, hspi, 4000000U)) {
+    Serial.println("Error accessing microSD card!");
+    return 0;
+  }
+  isAvailable = true;
+  return 1;
+}
+
+byte sdCard_close() {
+  if (!isAvailable) return 2;
+  SD.end();
+  hspi.end();
+  isAvailable = !isAvailable;
+  return 1;
+}
+
+byte sdCard_reset() {
+  sdCard_close();
+  return sdCard_open();
 }
 
 

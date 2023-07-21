@@ -27,7 +27,7 @@ const byte downButtonPin = 4;
   
 #define _LCDML_ADAFRUIT_FONT_SIZE   1  
 #define _LCDML_ADAFRUIT_FONT_W      (10*_LCDML_ADAFRUIT_FONT_SIZE)             // font width 
-#define _LCDML_ADAFRUIT_FONT_H      (20*_LCDML_ADAFRUIT_FONT_SIZE)             // font heigt 
+#define _LCDML_ADAFRUIT_FONT_H      (16*_LCDML_ADAFRUIT_FONT_SIZE)             // font heigt 
   
 // settings for u8g lib and lcd
 #define _LCDML_ADAFRUIT_lcd_w       240            // lcd width

@@ -14,6 +14,9 @@
 #define SPI_SCK       14
 
 void setup_SDCard();
+byte sdCard_open();
+byte sdCard_close();
+byte sdCard_reset();
 
 void printDirectory(File dir, int numTabs);
 LinkedList<String> findFilesInDirectory(File dir);

@@ -1,57 +1,64 @@
 
 
 #include "timeInformation.h"
+#include "sdCard.h"
 
 const char* ssid     = "SetYourSSID";
 const char* password = "SetYourPassword";
 const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 3600;
+long  gmtOffset_sec = 3600;
+int   daylightOffset_sec = 3600;
 
 #include <Esp.h>
 
 byte setup_TimeInformation() {
-    uint32_t flash_size = ESP.getFlashChipSize();
-  
-  Serial.print("Flash size: ");
-  Serial.print(flash_size);
-  Serial.println(" bytes");
+    #define RTC_UTC_TEST 1510592825 // 1510592825 = Monday 13 November 2017 17:07:05 UTC
+
+    time_t rtc = RTC_UTC_TEST;
+    timeval tv = { rtc, 0 };
+    settimeofday(&tv, nullptr);
     return setTimeInformation();
 }
 
 byte setTimeInformation() {
-
-    #define RTC_UTC_TEST 1510592825 // 1510592825 = Monday 13 November 2017 17:07:05 UTC
-  
-    time_t rtc = RTC_UTC_TEST;
-    timeval tv = { rtc, 0 };
-    settimeofday(&tv, nullptr);
-
-    /*Serial.print("Connecting to ");
-    Serial.println(ssid);
-    WiFi.begin(ssid, password);
-    long tempMillis = millis();
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-        Serial.println(millis()-tempMillis);
-        //if (millis()-tempMillis > 10000) { // 10 second wait
-        //    Serial.println("Disconnect");
-        //    return 101;
-        //}
+    if (!sdCard_open()) return 0; 
+    writeFile(SD, "/hello.txt", "Hello ");
+    File root = SD.open("/WLAN");
+    int tempCounter = 0;
+    LinkedList<String> fName = findFilesInDirectory(root);
+    root.close();
+    while(fName.size() == 0 && tempCounter < 5) {
+        root = SD.open("/WLAN");
+        delay(100);
+        tempCounter++;
+        fName = findFilesInDirectory(root);
+        root.close();
     }
-    Serial.println("");
-    Serial.println("WiFi connected.");
+    if (fName.size() == 0) {
+        Serial.println("No WLAN files found!");
+        return 10;
+    }
+    String SSID = "";
+    String pw = "";
+    WiFi.mode(WIFI_STA);
+    for (int i=0; i < fName.size(), i++) {
+        getWLANInformation("/WLAN/" + fName.get(i), SSID, pw);
+        WiFi.begin(ssid, password);
+        long tempMillis = millis();
+        while (WiFi.status() != WL_CONNECTED && millis()-tempMillis < 10000) {
+            delay(500);
+        }
 
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    Serial.println(getDate());
-    Serial.println(getTime());
-
-    //disconnect WiFi as it's no longer needed
-    WiFi.disconnect(true);
+        if (WiFi.status() == WL_CONNECTED) {
+            configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+            return 1;
+        }
+    }
     WiFi.mode(WIFI_OFF);
-    Serial.println("WIFI DISCONNECTED");*/
-    return 0;
+    Serial.println("WIFI Access not possible!");
+    return 100;
 }
 
 String getDate() {
@@ -100,5 +107,21 @@ tm getCurrentTimeStruct() {
         return timeinfo;
     } 
     return timeinfo;
+}
+
+void setGMTOffset(long sec) {
+    gmtOffset_sec = sec;
+}
+
+long getGMTOffset() {
+    return gmtOffset_sec;
+}
+
+void setDaylightOffset(int sec) {
+    daylightOffset_sec = sec;
+}
+
+int getDaylightOffset() {
+    return daylightOffset_sec;
 }
 //EOF

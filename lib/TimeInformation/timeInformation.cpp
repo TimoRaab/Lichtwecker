@@ -3,8 +3,8 @@
 #include "timeInformation.h"
 #include "sdCard.h"
 
-const char* ssid     = "SetYourSSID";
-const char* password = "SetYourPassword";
+//const char* ssid     = "SetYourSSID";
+//const char* password = "SetYourPassword";
 const char* ntpServer = "pool.ntp.org";
 long  gmtOffset_sec = 3600;
 int   daylightOffset_sec = 3600;
@@ -21,7 +21,26 @@ byte setup_TimeInformation() {
 }
 
 byte setTimeInformation() {
-    if (!sdCard_open()) return 0; 
+    if (WiFi.status() == WL_CONNECTED) {
+        struct tm timeinfo = getCurrentTimeStruct();
+        struct tm timeinfo2 = getCurrentTimeStruct();
+        int tempCounter = 0;
+        delay(500);
+        while(timeinfo.tm_year == timeinfo2.tm_year && tempCounter < 10) {
+            configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+            delay(1000);
+            timeinfo2 = getCurrentTimeStruct();
+            Serial.print("Still Searching, TempCounter: ");
+            Serial.println(tempCounter);
+            tempCounter++;
+        }
+        //WiFi.disconnect(true);
+        //WiFi.mode(WIFI_OFF);
+        if (tempCounter >= 10) return 10;
+        return 1;
+    }
+    return 100;
+    /*if (!sdCard_open()) return 0; 
     writeFile(SD, "/hello.txt", "Hello ");
     File root = SD.open("/WLAN");
     int tempCounter = 0;
@@ -58,7 +77,7 @@ byte setTimeInformation() {
     }
     WiFi.mode(WIFI_OFF);
     Serial.println("WIFI Access not possible!");
-    return 100;
+    return 100;*/
 }
 
 String getDate() {

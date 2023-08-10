@@ -9,56 +9,41 @@
 #include "sdCard.h"
 #include "musicPlayer.h"
 #include "ledLight.h"
+#include "wifiHandling.h"
 #include <LinkedList.h>
+#include <WiFiManager.h>
 
 
 
 void setup() {
     Serial.begin(115200);
-    setup_SDCard();
-    setup_musicPlayer();
+    setup_WIFI();
     setup_TimeInformation();
-    setup_menu();
-    setup_LED();
-    delay(500);
+    //setup_SDCard();
+    //setup_musicPlayer();
+    //setup_menu();
+    //setup_LED();
+    //delay(500);
     Serial.println("Startup Finished");
-
-/*
-    writeFile(SD, "/hello.txt", "Hello ");
-
-    //listDir(SD, "/", 2);
-    Serial.println();
-    File root2 = SD.open("/");
-    //printDirectory(root2, 2);
-    root2.close();
-    Serial.println();
-    File root = SD.open("/WLAN");
-    //printDirectory(root, 0);
-    int tempCounter = 0;
-    LinkedList<String> fName = findFilesInDirectory(root);
-    root.close();
-    while(fName.size() == 0 && tempCounter < 5) {
-        root = SD.open("/WLAN");
-        delay(100);
-        Serial.println("Error File Size!, Try: " + tempCounter);
-        tempCounter++;
-        fName = findFilesInDirectory(root);
-        root.close();
+    for (int i=0; i<3; i++) {
+        Serial.println(getTime());
+            delay(1000);
     }
 
-    Serial.println("GetData from LinkedList");
-    Serial.println("Finished");
-    String SSID = "";
-    String pw = "";
-    getWLANInformation("/WLAN/" + fName.get(0), SSID, pw);
+    WIFIconnect();
+    Serial.println(setTimeInformation());
+    WIFIdisconnect();
+    Serial.println("Startup Finished");
+    for (int i=0; i<3; i++) {
+        Serial.println(getTime());
+            delay(1000);
+    }
 
-    Serial.println("Outside");
-    Serial.println(SSID);
-    Serial.println(pw);
-*/
 }
 
  void loop() {
-    menuStart();
+    Serial.println(getTime());
+    delay(5000);
+    //menuStart();
     //updateLED();
 }

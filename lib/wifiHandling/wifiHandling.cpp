@@ -27,16 +27,19 @@ void WIFI_setNetwork() {
 }
 
 void WIFIconnect() {
-    WiFi.mode(WIFI_STA);
-    delay(500);
-    Serial.print("SSID: ");
-    Serial.println(wm.getWiFiSSID());
-    Serial.print("Pass: ");
-    Serial.println(wm.getWiFiPass());
-    WiFi.begin(ssid, pass);
-    long tempMillis = millis();
-    while (WiFi.status() != WL_CONNECTED && millis()-tempMillis < 10000) {
+    if (WiFi.status() != WL_CONNECTED) {
+        WiFi.mode(WIFI_STA);
         delay(500);
+        Serial.print("SSID: ");
+        Serial.println(wm.getWiFiSSID());
+        Serial.print("Pass: ");
+        Serial.println(wm.getWiFiPass());
+        WiFi.begin(ssid, pass);
+        delay(500);
+        long tempMillis = millis();
+        while (WiFi.status() != WL_CONNECTED && millis()-tempMillis < 10000) {
+            delay(500);
+        }
     }
 }
 

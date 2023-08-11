@@ -24,20 +24,6 @@ void setup() {
     //setup_menu();
     //setup_LED();
     //delay(500);
-    Serial.println("Startup Finished");
-    for (int i=0; i<3; i++) {
-        Serial.println(getTime());
-            delay(1000);
-    }
-
-    WIFIconnect();
-    Serial.println(setTimeInformation());
-    WIFIdisconnect();
-    Serial.println("Startup Finished");
-    for (int i=0; i<3; i++) {
-        Serial.println(getTime());
-            delay(1000);
-    }
 
 }
 

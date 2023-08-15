@@ -4,8 +4,8 @@
 #include "sdCard.h"
 #include "wifiHandling.h"
 
-//const char* ssid     = "SetYourSSID";
-//const char* password = "SetYourPassword";
+extern boolean WIFIavailable;
+
 const char* ntpServer = "pool.ntp.org";
 long  gmtOffset_sec = 3600;
 int   daylightOffset_sec = 3600;
@@ -21,7 +21,12 @@ byte setup_TimeInformation() {
     return setTimeInformation();
 }
 
+//0 set time
+//10 wifi connected, but not possible to reach server
+//100 wifi not connnected
+//200 wifi not available
 byte setTimeInformation() {
+    if (!WIFIavailable) return 200;
     WIFIconnect();
     if (WiFi.status() == WL_CONNECTED) {
         struct tm timeinfo = getCurrentTimeStruct();
@@ -39,7 +44,7 @@ byte setTimeInformation() {
         }
         WIFIdisconnect();
         if (tempCounter >= 10) return 10;
-        return 1;
+        return 0;
     }
     WIFIdisconnect();
     return 100;

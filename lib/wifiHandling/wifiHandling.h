@@ -8,10 +8,13 @@
 #include <WiFiManager.h>
 
 void setup_WIFI();
-void WIFI_setNetwork();
-void WIFIconnect();
+byte WIFI_setNetwork();
+byte WIFIconnect();
 void WIFIdisconnect();
 void WIFIreset();
+
+
+extern boolean WIFIavailable;
 
 
 #endif

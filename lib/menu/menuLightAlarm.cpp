@@ -65,6 +65,7 @@ LCDML_add         (6  , LCDML_0         , 6  , "Time Settings"    , NULL);
     LCDML_add         (8  , LCDML_0_6_1     , 1  , "Activate NPT"     , NULL); //todo
     LCDML_add         (9  , LCDML_0_6_1     , 2  , "NTP Intervall"    , NULL); //TODO
     LCDML_add         (10 , LCDML_0_6_1     , 3  , "Set TimeZone"     , NULL); 
+    //LCDML_add         (11 , LCDML_0_6_1     , 4  , "Set Daylight Offset", NULL);
   LCDML_add         (11 , LCDML_0_6       , 3  , "Set Time Manual"  , menu_setTimeManual);        
     LCDML_addAdvanced (12 , LCDML_0_6_3     , 1  , NULL, "", menu_setHour, 0, _LCDML_TYPE_dynParam);
     LCDML_addAdvanced (13 , LCDML_0_6_3     , 2  , NULL, "", menu_setMinute, 0, _LCDML_TYPE_dynParam);

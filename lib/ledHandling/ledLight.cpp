@@ -10,6 +10,7 @@ uint8_t brightness = 90;
 #define UPDATES_PER_SECOND 100
 CRGBPalette16 currentPalette;
 TBlendType    currentBlending;
+unsigned long currentMillis = 0;
 
 
 void setup_LED() {
@@ -22,9 +23,13 @@ void setup_LED() {
 
 void updateLED() {
     static uint8_t startIndex = 0;
-    startIndex = startIndex + 5; /* motion speed */
-    FillLEDsFromPaletteColors(startIndex);
-    FastLED.show();
+    if (millis()-currentMillis > 1000/UPDATES_PER_SECOND) {
+        startIndex = startIndex + 5; /* motion speed */
+        FillLEDsFromPaletteColors(startIndex);
+        FastLED.show();
+        currentMillis = millis();
+    }
+    
     //FastLED.delay(1000 / UPDATES_PER_SECOND);
 }
 

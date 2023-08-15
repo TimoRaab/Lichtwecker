@@ -17,7 +17,8 @@ byte setup_TimeInformation() {
     time_t rtc = RTC_UTC_TEST;
     timeval tv = { rtc, 0 };
     settimeofday(&tv, nullptr);
-    return setTimeInformation();
+    return 0;
+    //return setTimeInformation();
 }
 
 byte setTimeInformation() {
@@ -41,7 +42,7 @@ byte setTimeInformation() {
     String SSID = "";
     String pw = "";
     WiFi.mode(WIFI_STA);
-    for (int i=0; i < fName.size(), i++) {
+    for (int i=0; i < fName.size(); i++) {
         getWLANInformation("/WLAN/" + fName.get(i), SSID, pw);
         WiFi.begin(ssid, password);
         long tempMillis = millis();

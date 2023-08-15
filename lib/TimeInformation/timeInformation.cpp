@@ -2,9 +2,10 @@
 
 #include "timeInformation.h"
 #include "sdCard.h"
+#include "wifiHandling.h"
 
-const char* ssid     = "SetYourSSID";
-const char* password = "SetYourPassword";
+extern boolean WIFIavailable;
+
 const char* ntpServer = "pool.ntp.org";
 long  gmtOffset_sec = 3600;
 int   daylightOffset_sec = 3600;
@@ -21,44 +22,32 @@ byte setup_TimeInformation() {
     //return setTimeInformation();
 }
 
+//0 set time
+//10 wifi connected, but not possible to reach server
+//100 wifi not connnected
+//200 wifi not available
 byte setTimeInformation() {
-    if (!sdCard_open()) return 0; 
-    writeFile(SD, "/hello.txt", "Hello ");
-    File root = SD.open("/WLAN");
-    int tempCounter = 0;
-    LinkedList<String> fName = findFilesInDirectory(root);
-    root.close();
-    while(fName.size() == 0 && tempCounter < 5) {
-        root = SD.open("/WLAN");
-        delay(100);
-        tempCounter++;
-        fName = findFilesInDirectory(root);
-        root.close();
-    }
-    if (fName.size() == 0) {
-        Serial.println("No WLAN files found!");
-        return 10;
-    }
-    String SSID = "";
-    String pw = "";
-    WiFi.mode(WIFI_STA);
-    for (int i=0; i < fName.size(); i++) {
-        getWLANInformation("/WLAN/" + fName.get(i), SSID, pw);
-        WiFi.begin(ssid, password);
+   if (!WIFIavailable) return 200;
+    WIFIconnect();
+    if (WiFi.status() == WL_CONNECTED) {
+        struct tm timeinfo = getCurrentTimeStruct();
+        struct tm timeinfo2 = getCurrentTimeStruct();
+        int tempCounter = 0;
+        delay(500);
+        configTime(gmtOffset_sec, daylightOffset_sec, "de.pool.ntp.org", "pool.ntp.org", "time.nist.gov");
         long tempMillis = millis();
-        while (WiFi.status() != WL_CONNECTED && millis()-tempMillis < 10000) {
-            delay(500);
+        while(timeinfo.tm_year == timeinfo2.tm_year && millis()-tempMillis < 20000) {          
+            timeinfo2 = getCurrentTimeStruct();
+            Serial.print("Still Searching, TempCounter: ");
+            Serial.println(tempCounter);
+            tempCounter++;
+            delay(100);
         }
-
-        if (WiFi.status() == WL_CONNECTED) {
-            configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-            WiFi.disconnect(true);
-            WiFi.mode(WIFI_OFF);
-            return 1;
-        }
+        WIFIdisconnect();
+        if (tempCounter >= 10) return 10;
+        return 0;
     }
-    WiFi.mode(WIFI_OFF);
-    Serial.println("WIFI Access not possible!");
+    WIFIdisconnect();
     return 100;
 }
 
